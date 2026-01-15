@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="PozitifWeb.OrderApp.Api/PozitifWeb.OrderApp.Api.csproj" />
+  <Project Path="PozitifWeb.OrderApp.Application/PozitifWeb.OrderApp.Application.csproj" />
+  <Project Path="PozitifWeb.OrderApp.Domain/PozitifWeb.OrderApp.Domain.csproj" />
+  <Project Path="PozitifWeb.OrderApp.Infrastructure/PozitifWeb.OrderApp.Infrastructure.csproj" />
+  <Project Path="PozitifWeb.OrderApp.Tests/PozitifWeb.OrderApp.Tests.csproj" />
+</Solution>
