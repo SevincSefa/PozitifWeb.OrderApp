@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: pozitifweb-db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Sa_12345678!"
+    ports:
+      - "1433:1433"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pozitifweb-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__Default: "Server=db,1433;Database=PozitifWebOrderDb;User Id=sa;Password=Sa_12345678!;TrustServerCertificate=True;"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db

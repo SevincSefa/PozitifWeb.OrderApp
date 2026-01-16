@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+  </Folder>
   <Project Path="PozitifWeb.OrderApp.Api/PozitifWeb.OrderApp.Api.csproj" />
   <Project Path="PozitifWeb.OrderApp.Application/PozitifWeb.OrderApp.Application.csproj" />
   <Project Path="PozitifWeb.OrderApp.Domain/PozitifWeb.OrderApp.Domain.csproj" />
