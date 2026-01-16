@@ -70,14 +70,36 @@ Swagger:
 
 ---
 
-## Mimari
-Onion mimari yapı uygulanmıştır:
+## Mimari (Katmanlı Yapı / Onion Yaklaşımı)
 
-- **API**: Controller’lar, middleware, Swagger
-- **Application**: DTO’lar, servisler, validator’lar, business rule’lar
-- **Domain**: Entity ve Enum tanımları
-- **Infrastructure**: EF Core DbContext, migration’lar
-- **Tests**: Unit testler
+Bu projede **katmanlı (Onion benzeri) bir yapı** uygulanmıştır. Amaç; sorumlulukları ayrıştırmak, test edilebilirliği artırmak ve bağımlılıkları yönetilebilir hale getirmektir.
+
+### Katmanlar
+
+- **API (Presentation Layer)**  
+  Controller’lar, Swagger/OpenAPI, middleware ve JSON ayarlarını içerir.  
+  İş mantığı içermez; request alır, application servislerini çağırır ve response döner.
+
+- **Application (Use Case Layer)**  
+  İş kuralları, servisler (`CustomerService`, `OrderService`), DTO’lar ve FluentValidation doğrulamaları burada bulunur.  
+  Uygulamanın ana akışı bu katmanda yönetilir.
+
+- **Domain (Core Layer)**  
+  Entity ve enum tanımları yer alır (örn. `Order`, `OrderItem`, `OrderStatus`).  
+  Domain katmanı dış bağımlılık içermez.
+
+- **Infrastructure (Data Access Layer)**  
+  EF Core `DbContext`, migration’lar ve veritabanı erişim detayları bu katmanda bulunur.  
+  Application katmanı veri erişimini `IAppDbContext` üzerinden yapar.
+
+### Bağımlılık yönü
+Bağımlılıklar “dıştan içe” olacak şekilde tasarlanmıştır:
+
+`API → Application → Domain`
+
+Infrastructure katmanı ise veri erişimi için kullanılır ve DI üzerinden uygulamaya entegre edilmiştir.
+
+> Not: Entity sayısı az olduğu için AutoMapper kullanılmamış; DTO dönüşleri manuel mapping / projection (Select) ile yapılmıştır.
 
 ---
 
@@ -104,3 +126,16 @@ Uygulamada tüm hatalar merkezi olarak `ExceptionHandlingMiddleware` üzerinden 
 
 ## Validation
 FluentValidation ile request doğrulamaları yapılmaktadır.
+
+---
+
+## Varsayımlar
+- **TotalAmount** alanı sistem tarafından **OrderItems** üzerinden hesaplanır; client request’inden `totalAmount` alınmaz.
+- `OrderDate` request’te gönderilmezse sistem saati baz alınarak **UTC** ile otomatik atanır.
+- “Aynı gün içerisinde max 5 sipariş” kuralı, `OrderDate.Date` baz alınarak gün başlangıcı/bitişi üzerinden hesaplanmıştır (UTC).
+- Projede entity sayısı az olduğu için **AutoMapper kullanılmamıştır**. DTO mapping işlemleri **manual mapping / projection (Select)** ile yapılmıştır.
+- Case gereksinimlerinde **Authentication/Authorization** istenmediği için kullanıcı bilgisine bağlı audit alanları (`CreatedBy`, `UpdatedBy`, `DeletedBy`) eklenmemiştir.
+- **Soft delete** gereksinimlerde olmadığı için uygulanmamıştır (`IsDeleted`, `DeletedDate` gibi alanlar eklenmemiştir). Silme operasyonu da ayrıca tanımlanmamıştır.
+- Status güncelleme sadece `PATCH /api/orders/{id}/status` endpoint’i üzerinden yapılır; sipariş kalemlerini güncelleme/silme gibi ek endpoint’ler case kapsamı dışında tutulmuştur.
+- `Cancelled` durumundaki siparişler için yalnızca status değişikliği engellenmiştir; listeleme ve detay görüntüleme serbesttir.
+- Docker ile çalıştırma senaryosunda SQL Server kurulumu gerekmeyeceği varsayılmış, MSSQL container üzerinden çalışacak şekilde yapılandırılmıştır. Uygulama açılışta otomatik migration uygular.
