@@ -17,6 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PozitifWeb.OrderApp.Application\PozitifWeb.OrderApp.Application.csproj" />
+    <ProjectReference Include="..\PozitifWeb.OrderApp.Domain\PozitifWeb.OrderApp.Domain.csproj" />
+    <ProjectReference Include="..\PozitifWeb.OrderApp.Infrastructure\PozitifWeb.OrderApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 

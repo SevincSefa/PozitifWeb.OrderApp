@@ -6,6 +6,7 @@ using PozitifWeb.OrderApp.Application.Interfaces;
 using PozitifWeb.OrderApp.Application.Services;
 using PozitifWeb.OrderApp.Application.Validators;
 using PozitifWeb.OrderApp.Infrastructure;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 
@@ -27,7 +28,12 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerRequestValidator>();
 
 builder.Services.AddFluentValidationAutoValidation();
-
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(opt =>

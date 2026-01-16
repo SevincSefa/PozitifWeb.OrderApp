@@ -10,7 +10,7 @@ public record CreateOrderResponse(int Id, decimal TotalAmount, OrderStatus Statu
 
 public record OrderListDto(int Id, int CustomerId, DateTime OrderDate, OrderStatus Status, decimal TotalAmount);
 
-public record OrderItemDto(string ProductName, int Quantity, decimal UnitPrice, decimal LineTotal);
+public record OrderItemDto(string ProductName, int Quantity, decimal UnitPrice);
 
 public record OrderDetailDto(
     int Id,

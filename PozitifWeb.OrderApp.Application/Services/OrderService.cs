@@ -11,8 +11,9 @@ public class OrderService(IAppDbContext db) : IOrderService
 {
     public async Task<CreateOrderResponse> CreateAsync(CreateOrderRequest request, CancellationToken ct)
     {
+
         if (request.Items is null || request.Items.Count < 1)
-            throw new BusinessRuleException("Bir sipariş en az 1 adet sipariş içermelidir.");
+            throw new BusinessRuleException("Bir sipariş en az 1 adet sipariş kalemi içermelidir.");
 
         var customerExists = await db.Customers.AnyAsync(x => x.Id == request.CustomerId, ct);
         if (!customerExists)
@@ -30,16 +31,16 @@ public class OrderService(IAppDbContext db) : IOrderService
         if (count >= 5)
             throw new BusinessRuleException("Aynı müşteri aynı gün içerisinde en fazla 5 sipariş oluşturabilir.");
 
-        var totalAmount = request.Items.Sum(i => i.Quantity * i.UnitPrice);
-
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        // Test için gerekli IsRelational()
+        await using var tx = db.Database.IsRelational()
+            ? await db.Database.BeginTransactionAsync(ct)
+            : null;
 
         var order = new Order
         {
             CustomerId = request.CustomerId,
             OrderDate = orderDate,
-            Status = OrderStatus.Pending,
-            TotalAmount = totalAmount
+            Status = OrderStatus.Pending
         };
 
         foreach (var i in request.Items)
@@ -52,9 +53,14 @@ public class OrderService(IAppDbContext db) : IOrderService
             });
         }
 
+        // TotalAmount, OrderItems üzerinden hesaplanması için;
+        order.TotalAmount = order.Items.Sum(i => i.Quantity * i.UnitPrice);
+
         db.Orders.Add(order);
         await db.SaveChangesAsync(ct);
-        await tx.CommitAsync(ct);
+
+        if (tx is not null)
+            await tx.CommitAsync(ct);
 
         return new CreateOrderResponse(order.Id, order.TotalAmount, order.Status);
     }
@@ -98,8 +104,7 @@ public class OrderService(IAppDbContext db) : IOrderService
                 o.Items.Select(i => new OrderItemDto(
                     i.ProductName,
                     i.Quantity,
-                    i.UnitPrice,
-                    i.Quantity * i.UnitPrice
+                    i.UnitPrice
                 )).ToList()
             ))
             .FirstOrDefaultAsync(ct);
@@ -114,7 +119,7 @@ public class OrderService(IAppDbContext db) : IOrderService
             throw new NotFoundException("Sipariş bulunamadı.");
 
         if (order.Status == OrderStatus.Cancelled)
-            throw new BusinessRuleException("İptal durumundaki siparişler güncellenemez.");
+            throw new BusinessRuleException("İptal edildi. durumundaki siparişler güncellenemez.");
 
         if (order.Status == OrderStatus.Completed)
             throw new BusinessRuleException("Tamamlandı durumundaki siparişlerde değişiklik yapılamaz.");
@@ -122,7 +127,7 @@ public class OrderService(IAppDbContext db) : IOrderService
         if (order.Status == OrderStatus.Pending)
         {
             if (request.Status is not (OrderStatus.Completed or OrderStatus.Cancelled))
-                throw new BusinessRuleException("Gönderiliyor durumundaki sipariş sadece Tamamlanmış veya İptal edilmiş yapılabilir.");
+                throw new BusinessRuleException("Gönderiliyor durumundaki sipariş sadece Tamamlandı veya İptal Edildi yapılabilir.");
 
             order.Status = request.Status;
             await db.SaveChangesAsync(ct);
