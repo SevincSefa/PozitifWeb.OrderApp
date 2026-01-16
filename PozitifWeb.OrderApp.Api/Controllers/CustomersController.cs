@@ -11,6 +11,7 @@ namespace PozitifWeb.OrderApp.Api.Controllers;
 /// Bu controller; müşteri listeleme ve müşteri oluşturma işlemlerini yönetir.
 /// </remarks>
 [ApiController]
+[Produces("application/json")]
 [Route("api/[controller]")]
 public class CustomersController(ICustomerService customerService) : ControllerBase
 {

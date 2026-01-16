@@ -12,6 +12,7 @@ namespace PozitifWeb.OrderApp.Api.Controllers;
 /// Bu controller; sipariş oluşturma, sayfalı listeleme, detay görüntüleme ve sipariş durum güncelleme işlemlerini yönetir.
 /// </remarks>
 [ApiController]
+[Produces("application/json")]
 [Route("api/[controller]")]
 public class OrdersController(IOrderService orderService) : ControllerBase
 {
